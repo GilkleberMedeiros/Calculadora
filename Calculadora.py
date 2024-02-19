@@ -1,5 +1,4 @@
 from tkinter import *
-from CustomWidgets import CustomButton
 
 class Calc():
     def __init__(self):
@@ -19,7 +18,7 @@ class Calc():
         self.Label1 = Label(self.Frame1,
                             text="0",
                             bg="#BECDDB",
-                            fg="#ffffff",
+                            fg="#000000",
                             font="Arial 30",
                             anchor="e",
                             wraplength=-13)
@@ -27,7 +26,7 @@ class Calc():
         self.Result = Label(self.Frame2,
                             text="0",
                             bg="#7B92A8",
-                            fg="#ffffff",
+                            fg="#000000",
                             font="Arial 18",
                             anchor="e")
         self.Result.place(x=0, y=0, width=300, height=40)
@@ -117,28 +116,38 @@ class Calc():
                               bg="#162D42", fg="#ffffff",
                               text="0", font="Arial 24",
                               command=lambda arg="0": self.insert(arg))
-        self.Botao17.place(x=20, y=268, width=120, height=42)
+        self.Botao17.place(x=20, y=268, width=50, height=42)
         self.Botao18 = Button(self.Frame3,
                               bg="#162D42", fg="#ffffff",
                               text=".", font="Arial 24",
                               command=lambda arg=".": self.insert(arg))
-        self.Botao18.place(x=160, y=268, width=50, height=42)
-        print(self.Label1['text'])
+        self.Botao18.place(x=90, y=268, width=50, height=42)
         self.Botao19 = Button(self.Frame3,
+                              bg="#162D42", fg="#ffffff",
+                              text="<=", font="Arial 24",
+                              command=lambda arg="<=": self.insert(arg))
+        self.Botao19.place(x=160, y=268, width=50, height=42)
+        self.Botao20 = Button(self.Frame3,
                               bg="#162D42", fg="#ffffff",
                               text="=", font="Arial 24",
                               command=self.canBeCalculated)
-        self.Botao19.place(x=230, y=268, width=50, height=42)
+        self.Botao20.place(x=230, y=268, width=50, height=42)
 
         self.janela.mainloop()
 
     def insert(self, s):
-        text = self.Label1['text']
-        textSize = int(self.Label1['font'][6:])
-        textFont = self.Label1['font'][:6]
+        """
+        Função para inserir elemento no display
+        :param s:
+        :return:
+        """
+        text = self.Label1['text'] # Texto
+        textSize = int(self.Label1['font'][6:]) # Tamanho do texto
+        textFont = self.Label1['font'][:6] # Fonte usada no texto
 
         text = self.check(text, s)
 
+        # Diminui o tamanho do texto conforme o cálculo vai ficando maior
         if len(text) > 13:
             if textSize > 12:
                 self.Label1['font'] = textFont + str(textSize - 6)
@@ -146,12 +155,23 @@ class Calc():
         self.Label1['text'] = text
 
     def check(self, text, s):
+        """
+        Função com várias condições para limitar o cálculo que é digitado pelo usuário
+        :param text:
+        :param s:
+        :return:
+        """
         lastElement = text[-1]
         # Se digitado(s) for igual C apagar tudo
         if s == "C":
             self.Label1['font'] = self.Label1['font'][:6] + "30"
             return "0"
         else:
+            # Se digitado(s) for <= retornar um text menos um elemento
+            if s == "<=":
+                if len(text) > 1:
+                    return text[:len(text) - 1]
+                return "0"
             # Se digitado(s) for ( e ultimo elemento text não for um symbol(+, -, *, /)
             if s == "(" and not (self.isSymbol(lastElement) or lastElement == "("):
                 self.Result['text'] = "Operação inválida"
@@ -176,23 +196,39 @@ class Calc():
                     return text + s
                 else:
                     return text
-
+            # Se digitado(s) for um numero um ( retorná-lo como primeiro elemento
             if (s.isdigit() or s == "(") and text == "0":
                 return s
+            # Se digitado(s) for um número e último elemento for um numero ou .
+            # retorná-lo sem espaço
             elif s.isdigit() and (self.isNumeric(lastElement)):
                 return text + s
+            # Se o último elemento for um espaço em branco, retornar digitado(s) sem espaço
+            elif lastElement == " ":
+                return text + s
+            # Em todos os outros casos retornar digitado(s) com espaço
             else:
                 return text + " " + s
 
+
     def canBeCalculated(self):
+        """
+        Função para verificar se a conta pode ser calculada
+        :return:
+        """
+
+        # Se passar texto.Label1 como parâmetro em command ele não vai ser atualizado
+        # então peguei daqui
         text = self.Label1['text']
         pE = 0
         pD = 0
+        # For que conta quantos ( e ) tem no texto
         for i in text:
             if i == "(":
                 pE += 1
             if i == ")":
                 pD += 1
+                
         if pE != pD:
             self.Result['text'] = "Faltam parenteses!!!"
         elif not (text[-1].isdigit() or text[-1] == "." or text[-1] == ")"):
@@ -201,6 +237,10 @@ class Calc():
             self.Result['text'] = self.parentese(text)
 
     def parentese(self, s):
+        """
+        Método que seleciona os primeiros parenteses que devem ser calcu-
+        lados
+        """
         while True:
             if s.isdigit():
                 return s
@@ -222,13 +262,16 @@ class Calc():
 
 
     def converte(self, s, indice1, indice2):
+        """
+        Método para fazer o cálculo da string
+        """
+        # Se a área selecionada dentro dos parenteses não puder ser calculada
         if s[indice1:indice2] == "" or s[indice1:indice2] == " ":
-            print("death function 2")
             return ""
         elif len(s[indice1:indice2]) <= 3 and s[indice1:indice2][1].isdigit():
-            print("death function 3")
-            print(f"return: {s[:indice1-1] + s[indice1:indice2][1] + s[indice2+1:]}")
             return s[indice1:indice2][1]
+
+        # Se a área selecionada dentro dos parenteses puder ser calculada
 
         # Usando o split
         op = s[indice1:indice2].split(" ")
@@ -237,6 +280,7 @@ class Calc():
                 op.remove(i)
             elif i == "":
                 op.remove(i)
+        
         # Sem usar o split
         operands = [""]
         count = 0
@@ -259,7 +303,6 @@ class Calc():
                     indice1 = i
                     break
 
-        print(f"op: {op}")
         while len(op) > 1:
             for i in range(0, len(op)):
                 if i < len(op) and op[i] == "*":
@@ -276,7 +319,6 @@ class Calc():
                     op[i] = float(op[i-1]) + float(op[i+1])
                     op.pop(i + 1)
                     op.pop(i - 1)
-                    print(f"opI: {op}")
                 if i < len(op) and op[i] == "-":
                     op[i] = float(op[i - 1]) - float(op[i + 1])
                     op.pop(i + 1)
@@ -286,11 +328,17 @@ class Calc():
 
 
     def isNumeric(self, num):
+        """
+        Método para verificar se é um número
+        """
         if num.isdigit() or num == ".":
             return True
         return False
 
     def isSymbol(self, symbol):
+        """
+        Método para verificar se é um símbolo de operações
+        """
         if symbol in ["+", "-", "*", "/"]:
             return True
         return False
