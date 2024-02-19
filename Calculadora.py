@@ -15,6 +15,23 @@ class Calc():
         self.Frame3 = Frame(self.janela, width=300, height=330, bg="#3E5B75")
         self.Frame3.place(x=0, y=120)
 
+        # Labels
+        self.Label1 = Label(self.Frame1,
+                            text="0",
+                            bg="#BECDDB",
+                            fg="#ffffff",
+                            font="Arial 30",
+                            anchor="e",
+                            wraplength=-13)
+        self.Label1.place(x=0, y=0, width=300, height=80)
+        self.Result = Label(self.Frame2,
+                            text="0",
+                            bg="#7B92A8",
+                            fg="#ffffff",
+                            font="Arial 18",
+                            anchor="e")
+        self.Result.place(x=0, y=0, width=300, height=40)
+
         # Botões
         self.Botao1 = Button(self.Frame3,
                              bg="#162D42", fg="#ffffff",
@@ -106,16 +123,177 @@ class Calc():
                               text=".", font="Arial 24",
                               command=lambda arg=".": self.insert(arg))
         self.Botao18.place(x=160, y=268, width=50, height=42)
+        print(self.Label1['text'])
         self.Botao19 = Button(self.Frame3,
                               bg="#162D42", fg="#ffffff",
                               text="=", font="Arial 24",
-                              command=lambda arg="=": self.insert(arg))
+                              command=self.canBeCalculated)
         self.Botao19.place(x=230, y=268, width=50, height=42)
 
         self.janela.mainloop()
 
     def insert(self, s):
-        print("Clicked!!!", s)
+        text = self.Label1['text']
+        textSize = int(self.Label1['font'][6:])
+        textFont = self.Label1['font'][:6]
+
+        text = self.check(text, s)
+
+        if len(text) > 13:
+            if textSize > 12:
+                self.Label1['font'] = textFont + str(textSize - 6)
+
+        self.Label1['text'] = text
+
+    def check(self, text, s):
+        lastElement = text[-1]
+        # Se digitado(s) for igual C apagar tudo
+        if s == "C":
+            self.Label1['font'] = self.Label1['font'][:6] + "30"
+            return "0"
+        else:
+            # Se digitado(s) for ( e ultimo elemento text não for um symbol(+, -, *, /)
+            if s == "(" and not (self.isSymbol(lastElement) or lastElement == "("):
+                self.Result['text'] = "Operação inválida"
+                return text
+            # Se digitado(s) for ) e ultimo elemento não for um número ou .
+            if s == ")" and not (self.isNumeric(lastElement) or lastElement == ")"):
+                self.Result['text'] = "Operação inválida"
+                return text
+            # Se digitado(s) for symbol e o ultimo elemento não for digito, . ou )
+            if self.isSymbol(s) and not (self.isNumeric(lastElement) or lastElement == ")"):
+                self.Result['text'] = "Operação inválida"
+                return text
+            # Se digitado(S) for igual a . verificar se existe outro . ou se está em um número
+            if s == ".":
+                number = ""
+                for i in text[::-1]:
+                    if i.isdigit() or i == ".":
+                        number += i
+                    else:
+                        break
+                if ("." not in number) and number != '':
+                    return text + s
+                else:
+                    return text
+
+            if (s.isdigit() or s == "(") and text == "0":
+                return s
+            elif s.isdigit() and (self.isNumeric(lastElement)):
+                return text + s
+            else:
+                return text + " " + s
+
+    def canBeCalculated(self):
+        text = self.Label1['text']
+        pE = 0
+        pD = 0
+        for i in text:
+            if i == "(":
+                pE += 1
+            if i == ")":
+                pD += 1
+        if pE != pD:
+            self.Result['text'] = "Faltam parenteses!!!"
+        elif not (text[-1].isdigit() or text[-1] == "." or text[-1] == ")"):
+            self.Result['text'] = "operação inválida"
+        else:
+            self.Result['text'] = self.parentese(text)
+
+    def parentese(self, s):
+        while True:
+            if s.isdigit():
+                return s
+            if "(" not in s:
+                s = self.converte(s, 0, len(s))
+                return s
+
+            parenteseE = 0
+            parenteseD = 0
+            for i, k in enumerate(s):
+                if k == "(":
+                    parenteseE = i
+                elif k == ")":
+                    parenteseD = i
+                    p = self.converte(s, parenteseE + 1, parenteseD)
+                    s = s[:parenteseE] + p + s[parenteseD+1:]
+                    break
+
+
+
+    def converte(self, s, indice1, indice2):
+        if s[indice1:indice2] == "" or s[indice1:indice2] == " ":
+            print("death function 2")
+            return ""
+        elif len(s[indice1:indice2]) <= 3 and s[indice1:indice2][1].isdigit():
+            print("death function 3")
+            print(f"return: {s[:indice1-1] + s[indice1:indice2][1] + s[indice2+1:]}")
+            return s[indice1:indice2][1]
+
+        # Usando o split
+        op = s[indice1:indice2].split(" ")
+        for i in op:
+            if i == " ":
+                op.remove(i)
+            elif i == "":
+                op.remove(i)
+        # Sem usar o split
+        operands = [""]
+        count = 0
+        while False:
+            if indice1 == indice2-1:
+                break
+            for i in range(indice1, indice2):
+                if s[i].isdigit() or s[i] == ".":
+                    indice1 = i
+                    operands[count] += s[i]
+                elif operands[count] != "":
+                    count += 1
+                    indice1 = i
+                    break
+            for i in range(indice1, indice2):
+                if s[i] in ["+", "-", "*", "/"]:
+                    operands.append(s[i])
+                    operands.append("")
+                    count += 1
+                    indice1 = i
+                    break
+
+        print(f"op: {op}")
+        while len(op) > 1:
+            for i in range(0, len(op)):
+                if i < len(op) and op[i] == "*":
+                    op[i] = float(op[i-1]) * float(op[i+1])
+                    op.pop(i + 1)
+                    op.pop(i - 1)
+                if i < len(op) and op[i] == "/":
+                    op[i] = float(op[i - 1]) / float(op[i + 1])
+                    op.pop(i + 1)
+                    op.pop(i - 1)
+
+            for i in range(0, len(op)):
+                if i < len(op) and op[i] == "+":
+                    op[i] = float(op[i-1]) + float(op[i+1])
+                    op.pop(i + 1)
+                    op.pop(i - 1)
+                    print(f"opI: {op}")
+                if i < len(op) and op[i] == "-":
+                    op[i] = float(op[i - 1]) - float(op[i + 1])
+                    op.pop(i + 1)
+                    op.pop(i - 1)
+
+        return str(op[0])
+
+
+    def isNumeric(self, num):
+        if num.isdigit() or num == ".":
+            return True
+        return False
+
+    def isSymbol(self, symbol):
+        if symbol in ["+", "-", "*", "/"]:
+            return True
+        return False
 
 
 app = Calc()
