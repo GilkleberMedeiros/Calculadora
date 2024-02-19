@@ -26,7 +26,7 @@ def converte(s, indice1=0, indice2):
 
         for i in range(indice1, indice2):
             if s[i].isdigit():
-                indice1 = i
+                indice1 = i 
                 operandB += s[i]
             elif operandB != "":
                 indice1 = i
