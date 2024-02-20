@@ -331,17 +331,13 @@ class Calc():
         """
         Método para verificar se é um número
         """
-        if num.isdigit() or num == ".":
-            return True
-        return False
+        return num.isdigit() or num == "."
 
     def isSymbol(self, symbol):
         """
         Método para verificar se é um símbolo de operações
         """
-        if symbol in ["+", "-", "*", "/"]:
-            return True
-        return False
+        return symbol in ["+", "-", "*", "/"]
 
 
 app = Calc()
