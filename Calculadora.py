@@ -173,15 +173,15 @@ class Calc():
                     return text[:len(text) - 1]
                 return "0"
             # Se digitado(s) for ( e ultimo elemento text não for um symbol(+, -, *, /)
-            if s == "(" and not (self.isSymbol(lastElement) or lastElement == "("):
+            if s == "(" and not (self.isSymbol(lastElement) or lastElement == "(" or lastElement == " "):
                 self.Result['text'] = "Operação inválida"
                 return text
             # Se digitado(s) for ) e ultimo elemento não for um número ou .
-            if s == ")" and not (self.isNumeric(lastElement) or lastElement == ")"):
+            if s == ")" and not (self.isNumeric(lastElement) or lastElement == ")" or lastElement == " "):
                 self.Result['text'] = "Operação inválida"
                 return text
             # Se digitado(s) for symbol e o ultimo elemento não for digito, . ou )
-            if self.isSymbol(s) and not (self.isNumeric(lastElement) or lastElement == ")"):
+            if self.isSymbol(s) and not (self.isNumeric(lastElement) or lastElement == ")" or lastElement == " "):
                 self.Result['text'] = "Operação inválida"
                 return text
             # Se digitado(S) for igual a . verificar se existe outro . ou se está em um número
