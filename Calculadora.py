@@ -309,7 +309,7 @@ class Calc():
                     op[i] = float(op[i-1]) * float(op[i+1])
                     op.pop(i + 1)
                     op.pop(i - 1)
-                if i < len(op) and op[i] == "/":
+                elif i < len(op) and op[i] == "/":
                     op[i] = float(op[i - 1]) / float(op[i + 1])
                     op.pop(i + 1)
                     op.pop(i - 1)
@@ -319,7 +319,7 @@ class Calc():
                     op[i] = float(op[i-1]) + float(op[i+1])
                     op.pop(i + 1)
                     op.pop(i - 1)
-                if i < len(op) and op[i] == "-":
+                elif i < len(op) and op[i] == "-":
                     op[i] = float(op[i - 1]) - float(op[i + 1])
                     op.pop(i + 1)
                     op.pop(i - 1)
